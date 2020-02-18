@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.PeSituationDao">
+    <!--jdbcType="INTEGER"  jdbcType="VARCHAR" -->
+    <resultMap id="BaseResultMap" type="com.example.demo.bean.PeSituation" >
+        <id column="user_id" property="userId" jdbcType="INTEGER" />
+        <result column="yyljybd" property="yyljybd" jdbcType="INTEGER" />
+        <result column="slgx" property="slgx" jdbcType="INTEGER" />
+        <result column="pdtl" property="pdtl" jdbcType="INTEGER" />
+        <result column="cspd" property="cspd" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="BASE_TABLE">
+        pe_situation
+    </sql>
+
+    <sql id="Base_Column_List" >
+        user_id as userId,yyljybd,slgx,pdtl,cspd
+    </sql>
+    <!--parameterType="java.lang.String"  resultMap="BaseResultMap" '%"#{book_name}"%'  -->
+    <select id="selectSituationByUserId"  resultType="com.example.demo.bean.PeSituation" >
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        <include refid="BASE_TABLE"/>
+        WHERE user_id = #{userId}
+    </select>
+    <!--插入文件数据  -->
+    <insert id="insertSituation"  parameterType="com.example.demo.bean.PeSituation" >
+        insert into <include refid="BASE_TABLE"/>
+        (user_id ,yyljybd ,slgx,pdtl ,cspd)
+        values
+        (#{userId},#{yyljybd},#{slgx},#{pdtl},#{cspd})
+    </insert>
+    <!--更新客户的做题情况-->
+    <update id="updateSituationByUserId" parameterType="com.example.demo.bean.PeSituation">
+        update <include refid="BASE_TABLE"/>
+        set yyljybd=#{yyljybd},slgx=#{slgx},pdtl=#{pdtl},cspd=#{cspd}
+        where user_id = #{userId}
+    </update>
+
+</mapper>

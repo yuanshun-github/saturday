@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.ProblemChoiceDao">
+    <!--jdbcType="INTEGER"  jdbcType="VARCHAR" -->
+    <resultMap id="ProblemChoiceMap" type="com.example.demo.bean.ProblemChoice" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="problem" property="problemName" jdbcType="VARCHAR" />
+        <result column="choice_a" property="problemChoiceA" jdbcType="INTEGER" />
+        <result column="choice_b" property="problemChoiceB" jdbcType="VARCHAR" />
+        <result column="choice_c" property="problemChoiceC" jdbcType="VARCHAR" />
+        <result column="choice_d" property="problemChoiceD" jdbcType="VARCHAR" />
+        <result column="answer" property="answer" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="VARCHAR" />
+        <result column="user_id" property="userId" jdbcType="INTEGER" />
+        <result column="is_flag" property="isFlag" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="BASE_TABLE">
+        choice_problem
+    </sql>
+
+    <sql id="Base_Column_List" >
+        a.id,a.problem as problemName,a.choice_a as problemChoiceA,a.choice_b as problemChoiceB,a.choice_c as problemChoiceC,
+        a.choice_d as problemChoiceD, a.answer,a.type,a.user_id as userId,a.is_flag as isFlag
+    </sql>
+    <!--插入文件数据  -->
+    <insert id="insertProblemChoice"  parameterType="com.example.demo.bean.ProblemChoice" >
+        insert into choice_problem(problem ,choice_a ,choice_b,choice_c ,choice_d ,answer, type,user_id,is_flag )
+        values(#{problemName},#{problemChoiceA},#{problemChoiceB},#{problemChoiceC},#{problemChoiceD},#{answer},#{type},#{userId},#{isFlag})
+    </insert>
+
+    <!--更新状态，是否为删除不删除-->
+    <update id="updateProblemChoiceIsFlag" parameterType="com.example.demo.bean.ProblemChoice">
+        update
+        <include refid="BASE_TABLE"/> a
+        set a.is_flag = #{isFlag}
+        where a.id = #{id}
+    </update>
+
+    <!--清空题中的用户表示，用户不在拥有该题-->
+    <update id="updateProblemChoiceUserId" parameterType="java.lang.Integer">
+        update
+        <include refid="BASE_TABLE"/> a
+        set a.user_id = null
+        where a.id = #{id}
+    </update>
+
+    <!--更新题，将题改变一下，将题完善之后保存-->
+    <update id="updapteProblemChoiceById" parameterType="com.example.demo.bean.ProblemChoice">
+        update
+        <include refid="BASE_TABLE"/> a
+        set a.problem = #{problemName},a.choice_a = #{problemChoiceA},a.choice_b = #{problemChoiceB},
+        a.choice_c = #{problemChoiceC},a.choice_d = #{problemChoiceD}, a.answer = #{answer},a.type = #{type}
+        where a.id = #{id}
+    </update>
+
+    <delete id="deleteProblemChoiceById" parameterType="java.lang.Integer">
+        delete from <include refid="BASE_TABLE"/>
+        where a.id = #{id}
+    </delete>
+
+    <!--分页查询获取到一页的数据-->
+    <select id="selectProblemChoiceSheetByType" resultType="com.example.demo.bean.ProblemChoice">
+        select
+        <include refid="Base_Column_List"/> ,b.id isCollection
+        from
+        <include refid="BASE_TABLE"/> a
+        left join collection_problem b on a.id = b.problem_id
+        where type = #{type} and a.is_flag = '0'
+        limit #{begin},#{sheet}
+    </select>
+
+    <!--带收藏的查询-->
+    <select id="selectProblem" resultType="com.example.demo.bean.ProblemChoice">
+        select <include refid="Base_Column_List"/>,b.id isCollection
+        from
+        <include refid="BASE_TABLE"/> a
+        left join collection_problem b on a.id = b.problem_id
+    </select>
+
+    <!--查询各种类型的题量-->
+    <select id="selectNumByType" resultType="java.lang.Integer">
+        select count(*)
+        from
+        <include refid="BASE_TABLE"/> a
+        where type = #{type}
+    </select>
+
+    <!--查看收藏的题型,带分页查询-->
+    <select id="selectCollectChoice" resultType="com.example.demo.bean.ProblemChoice">
+        select
+        <include refid="Base_Column_List" />,b.id isCollection
+        from collection_problem b
+        left join <include refid="BASE_TABLE"/> a on a.id = b.problem_id
+        where b.is_flag='0' and a.is_flag = '0' and b.user_id = #{userId}
+        limit #{begin},#{sheet}
+    </select>
+
+    <!--收藏题的数量-->
+    <select id="selectCollectionNumByUserId"  resultType="java.lang.Integer">
+        select count(*) from choice_problem a
+        left join <include refid="BASE_TABLE"/> b on a.id = b.problem_id
+        where b.is_flag='0'  and
+        b.user_id = #{userId}
+    </select>
+
+    <!--查看自己录入的题-->
+    <select id="selectWritePeByUserId" resultType="com.example.demo.bean.ProblemChoice">
+        select
+        <include refid="Base_Column_List" />
+        from
+        <include refid="BASE_TABLE"/> a
+        where
+        a.user_id = #{userId}
+        limit #{begin},#{sheet}
+    </select>
+
+    <!--查看自己录入的题的数量-->
+    <select id="selectWritePeNumByUserId" resultType="java.lang.Integer">
+        select
+        count(*)
+        from
+        <include refid="BASE_TABLE"/> a
+        where
+        a.user_id = #{userId}
+    </select>
+
+    <!--查看录入的公考题 yyljybd,cspd,pdtl,slgx-->
+    <select id="selectWritePe" resultType="com.example.demo.bean.ProblemChoice">
+        select
+        <include refid="Base_Column_List" />,b.id as isCollection
+        from
+        <include refid="BASE_TABLE"/> a
+        left join collection_problem b on a.id = b.problem_id
+        where  (a.type = "yyljybd" or a.type="cspd" or a.type="pdtl" or a.type="slgx") and
+        a.user_id = #{userId}
+        limit #{begin},#{sheet}
+    </select>
+
+    <!--查询题信息根据题id-->
+    <select id="selectProblemChoiceById" resultType="com.example.demo.bean.ProblemChoice">
+        select
+        <include refid="Base_Column_List" />
+        from
+        <include refid="BASE_TABLE"/> a
+        where id = #{id}
+    </select>
+
+    <!--查询待审批的数据-->
+    <select id="selectProblemChoiceByIsFlag" resultType="com.example.demo.bean.ProblemChoice">
+        select
+        <include refid="Base_Column_List" />,b.id isCollection
+        from
+        <include refid="BASE_TABLE"/> a
+        left join collection_problem b on a.id = b.problem_id
+        where a.is_flag = #{isFlag}
+        limit #{begin},#{sheet}
+    </select>
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.BookDao">
+    <!--jdbcType="INTEGER"  jdbcType="VARCHAR" -->
+    <resultMap id="BaseResultMap" type="com.example.demo.bean.Book" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="book_name" property="bookName" jdbcType="VARCHAR" />
+        <result column="book_num" property="bookNum" jdbcType="INTEGER" />
+        <result column="book_author" property="bookAuthor" jdbcType="VARCHAR" />
+        <result column="book_publish" property="bookPublish" jdbcType="VARCHAR" />
+        <result column="book_type" property="bookType" jdbcType="INTEGER" />
+        <result column="book_flag" property="bookFlag" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="BASE_TABLE">
+        book_information
+    </sql>
+
+    <sql id="Base_Column_List" >
+        id,book_name as bookName,book_num as bookNum,book_author as bookAuthor,book_publish as bookPublish,book_type as bookType,book_flag as bookFlag
+    </sql>
+<!--parameterType="java.lang.String"  resultMap="BaseResultMap" '%"#{book_name}"%'  -->
+    <select id="selectByName"  resultType="com.example.demo.bean.Book" >
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        <include refid="BASE_TABLE"/>
+        WHERE book_name like  CONCAT(CONCAT('%',#{book_name},'%'))
+        limit #{begin},#{sheet}
+    </select>
+    <!--通过书名查看书的总数-->
+    <select id="selectNumByName" resultType="java.lang.Integer">
+        select count(*)
+        from
+        <include refid="BASE_TABLE"/>
+        WHERE book_name like  CONCAT(CONCAT('%',#{book_name},'%'))
+    </select>
+
+</mapper>

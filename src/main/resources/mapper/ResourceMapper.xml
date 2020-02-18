@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.ResourceFileDao">
+
+
+    <sql id="BASE_TABLE">
+        resource_file
+    </sql>
+
+    <sql id="Base_Column_List" >
+        a.id,a.grade,a.subject,a.keyword,a.type,a.file_name fileName,a.file_size fileSize
+    </sql>
+
+    <!--将文件插入资料库-->
+    <insert id="insertResource" parameterType="com.example.demo.bean.ResourceFile">
+        insert into <include refid="BASE_TABLE"/>
+        (grade,subject,keyword,type,file_name,file_size,user_id,status,upload_date)
+        values
+        (#{grade},#{subject},#{keyword},#{type},#{fileName},#{fileSize},#{userId},#{status},now())
+    </insert>
+
+    <!--通过关键字模糊查询资料-->
+    <select id="selectResourceByKeyword" resultType="com.example.demo.bean.ResourceFile">
+        <bind name="keyword_name" value="'%' + keyword + '%'"/>
+        select
+        <!--a.id,a.file_name fileName-->
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="BASE_TABLE"/> a
+        where a.keyword like #{keyword_name}
+        <!--CONCAT(CONCAT('%',#{keyword},'%'))-->
+        limit #{begin},#{sheet}
+    </select>
+
+    <!--通过关键字模糊查询资料,两个关键字查询-->
+    <select id="selectResourceByTwoKeywords" resultType="com.example.demo.bean.ResourceFile">
+        <bind name="keyword_name1" value="'%' + keyword1 + '%'"/>
+        <bind name="keyword_name2" value="'%' + keyword2 + '%'"/>
+        select
+        <!--a.id,a.file_name fileName-->
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="BASE_TABLE"/> a
+        where a.keyword like #{keyword_name1} or a.keyword like #{keyword_name2}
+        <!--CONCAT(CONCAT('%',#{keyword},'%'))-->
+        limit #{begin},#{sheet}
+    </select>
+
+
+
+    <!--通过全部限定查询资料-->
+    <select id="selectResourceByLimit" resultType="com.example.demo.bean.ResourceFile">
+        select
+        <!--a.id,a.file_name fileName-->
+        <include refid="Base_Column_List"/>
+        from
+        <include refid="BASE_TABLE"/> a
+        where a.grade like CONCAT(CONCAT('%',#{grade},'%')) and a.subject like CONCAT(CONCAT('%',#{subject},'%')) and a.type like CONCAT(CONCAT('%',#{type},'%'))
+        <!--where a.grade like #{grade}||'%' and a.subject like #{subject}||'%' and type like #{type}||'%'-->
+        limit #{begin},#{sheet}
+    </select>
+
+</mapper>

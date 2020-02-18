@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.UserDao" >
+    <resultMap id="BaseResultMap" type="com.example.demo.bean.User" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="user_name" property="userName" jdbcType="VARCHAR" />
+        <result column="user_code" property="userCode" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id,user_name,user_code
+    </sql>
+
+    <sql id="BASE_TABLE">
+        user_table
+    </sql>
+
+    <!--更新用户，将用户名字保存进去-->
+    <update id="updateUserName" parameterType="com.example.demo.bean.User">
+        update <include refid="BASE_TABLE"/>
+        set user_name = #{userName}
+        where id = #{id}
+    </update>
+
+    <!--授权界面-->
+    <update id="updateUserInfo" parameterType="com.example.demo.bean.User">
+        update <include refid="BASE_TABLE"/>
+        set user_name = #{userName},province=#{province},city=#{city},gender=#{gender}
+        where id = #{id}
+    </update>
+
+    <!--通过id查询用户-->
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap" >
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        <include refid="BASE_TABLE"/>
+        WHERE id = #{id}
+    </select>
+    <!--通过code查看用户-->
+    <select id="selectByCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM user_table
+        where user_code = #{userCode}
+    </select>
+    <!--插入用户-->
+    <insert id="insertUser" parameterType="com.example.demo.bean.User">
+        insert into user_table(user_name,user_code,role_id)
+        values(#{userName},#{userCode},#{roleId})
+    </insert>
+
+    <!--查询用户的权限-->
+    <select id="selectUserRole" resultType="com.example.demo.bean.Role">
+        select
+        c.id,c.title,c.name,c.image,a.id userId
+        from user_table a
+        left join role_authority b on a.role_id = b.role_id
+        left join authority_table c on b.authority_id = c.id
+        where a.id = #{userId}
+    </select>
+
+</mapper>
